@@ -10,33 +10,36 @@ import java.util.List;
 import static java.sql.Connection.TRANSACTION_REPEATABLE_READ;
 
 public class UserDaoJDBCImpl extends Util implements UserDao {
-    Connection connection = getConnection();
+    private static final String SQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS Users(id INT PRIMARY KEY AUTO_INCREMENT,name VARCHAR(30),lastName VARCHAR(30),age INT);";
+    private static final String SQL_DROP_TABLE = "DROP TABLE IF EXISTS Users;";
+    private static final String SQL_ADD_USER = "INSERT INTO Users (name,lastName,age) VALUES (?,?,?);";
+    private static final String SQL_DELETE_USER = "DELETE FROM Users WHERE id = ?;";
+    private static final String SQL_GET_USERS = "select * from Users;";
+    private static final String SQL_DELETE_ALL = "DELETE FROM Users;";
+    private Connection connection = getConnection();
 
     public UserDaoJDBCImpl() {
 
     }
 
     public void createUsersTable() {
-        String sql = "CREATE TABLE IF NOT EXISTS Users(id INT PRIMARY KEY AUTO_INCREMENT,name VARCHAR(30),lastName VARCHAR(30),age INT);";
         try (Statement statement = connection.createStatement()) {
-            statement.execute(sql);
+            statement.execute(SQL_CREATE_TABLE);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void dropUsersTable() {
-        String sql = "DROP TABLE IF EXISTS Users;";
         try (Statement statement = connection.createStatement()) {
-            statement.execute(sql);
+            statement.execute(SQL_DROP_TABLE);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        String sql = "INSERT INTO Users (name,lastName,age) VALUES (?,?,?);";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = connection.prepareStatement(SQL_ADD_USER)) {
             connection.setTransactionIsolation(TRANSACTION_REPEATABLE_READ);
             connection.setAutoCommit(false);
             ps.setString(1,name);
@@ -56,8 +59,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     }
 
     public void removeUserById(long id) {
-        String sql = "DELETE FROM Users WHERE id = ?;";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = connection.prepareStatement(SQL_DELETE_USER)) {
             ps.setLong(1, id);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -67,9 +69,8 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
 
     public List<User> getAllUsers(){
         List<User> userList = new ArrayList<>();
-        String sql = "select * from Users;";
         try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
+             ResultSet resultSet = statement.executeQuery(SQL_GET_USERS)) {
             while (resultSet.next()) {
                 User user = new User();
                 user.setId(resultSet.getLong(1));
@@ -85,9 +86,8 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     }
 
     public void cleanUsersTable() {
-        String sql = "DELETE FROM Users;";
         try (Statement statement = connection.createStatement()) {
-            statement.execute(sql);
+            statement.execute(SQL_DELETE_ALL);
         } catch (SQLException e) {
             e.printStackTrace();
         }
