@@ -42,7 +42,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
         try (PreparedStatement ps = connection.prepareStatement(SQL_ADD_USER)) {
             connection.setTransactionIsolation(TRANSACTION_REPEATABLE_READ);
             connection.setAutoCommit(false);
-            ps.setString(1,name);
+            ps.setString(1, name);
             ps.setString(2, lastName);
             ps.setByte(3, age);
             ps.executeUpdate();
@@ -67,7 +67,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
         }
     }
 
-    public List<User> getAllUsers(){
+    public List<User> getAllUsers() {
         List<User> userList = new ArrayList<>();
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(SQL_GET_USERS)) {
